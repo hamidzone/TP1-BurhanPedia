@@ -5,14 +5,9 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class Main {
+
     static int saldo_awal;
     static LocalDate currentDate = LocalDate.now(); // Tanggal berjalan
-    static boolean isBarangDikirim = false; // Status pengiriman barang
-    static LocalDate tanggalPengiriman = null; // Tanggal pengiriman barang
-    static double totalPengeluaran = 0;
-    static int jumlahTransaksi = 0;
-    static double totalDiskonDiterima = 0;
-    static double pembelianTerbesar = 0;
 
     public static void main(String[] args) {
         System.out.println("=============================================================");
@@ -27,10 +22,12 @@ public class Main {
         boolean flag = true;
         int perintah_menu, perintah_penjual, perintah_pembeli;
         int jumlah_barang_tambah;
-        int jumlah_voucher_yang_sudah_dibuat_penjual = 0;
         int jumlah_transaksi_pembeli = 0;
-        String semua_voucher_penjual = "";
-        int saldo_pembeli;
+        int saldo_pembeli = saldo_awal;
+        double total_pengeluaran; //Total Pengeluaran dari jumlah transaksi yang dihasilkan
+        double harga_diskon; //Total harga diskon dari jumlah transaksi yang dihasilkan
+        double total_pendapatan; //Total Pendapatan dari transaksi si pembeli sama aja sih sama total pengeluaran si pembeli
+        double pembelian_terbesar;
 
         // Masukkan Stok Awal
         System.out.print("Masukkan stok awal: ");
@@ -42,7 +39,7 @@ public class Main {
 
         // Saldo Awal
         System.out.print("Masukkan saldo awal: ");
-        saldo_pembeli = scanner.nextInt();
+        saldo_awal = scanner.nextInt();
 
         // Fitur Menu Utama
         while (flag) {
@@ -55,6 +52,8 @@ public class Main {
             perintah_menu = scanner.nextInt();
 
             switch (perintah_menu) {
+
+                //Menu Penjual
                 case 1:
                     while (true) {
                         System.out.println("\n===== MENU PENJUAL =====");
@@ -70,77 +69,53 @@ public class Main {
                         System.out.print("Perintah: ");
                         perintah_penjual = scanner.nextInt();
 
+                        //Fitur Cek Stock apakah tersedia
                         if (perintah_penjual == 1) {
                             System.out.println("Stok saat ini: " + stok_awal);
-                        } 
+                        } //Fitur Cek Harga Barang
                         else if (perintah_penjual == 2) {
                             System.out.println("Harga Barang Saat ini: " + harga_barang);
-                        } 
+                        } //FItur Jumlah Stok yang Ingin Ditambah
                         else if (perintah_penjual == 3) {
                             System.out.print("Masukkan jumlah stok yang ingin ditambah: ");
                             jumlah_barang_tambah = scanner.nextInt();
                             stok_awal += jumlah_barang_tambah;
                             System.out.println("Jumlah barang saat ini: " + stok_awal);
-                        } 
-                        else if (perintah_penjual == 4) {
+
+                            //Fitur Update Harga Barang
+                        } else if (perintah_penjual == 4) {
                             System.out.print("Masukkan harga barang yang baru: ");
                             harga_barang = scanner.nextInt();
                             System.out.println("Harga barang saat ini adalah " + harga_barang);
-                        } 
+
+                        } //Fitur Generate Voucher Code untuk Penjual
                         else if (perintah_penjual == 5) {
-                            String characterCode = generateCharacterCode();
-                            System.out.println("Generated Character Code: " + characterCode);
-                            String numericCode = convertToNumericCode(characterCode);
-                            System.out.println("Generated Numeric Code: " + numericCode);
-                            semua_voucher_penjual += numericCode + "\n";
-                            jumlah_voucher_yang_sudah_dibuat_penjual++;
-                        } 
+                           generateCodeVoucher();
+                           break;
+                        } //Fitur Barang
                         else if (perintah_penjual == 6) {
                             if (jumlah_transaksi_pembeli == 0) {
-                                System.out.println("Tidak ada transaksi yang dapat dikirim.");
-                            } else {
-                                System.out.println("Masukkan nomor transaksi yang ingin dikirim (1-" + jumlah_transaksi_pembeli + "): ");
-                                int nomorTransaksi = scanner.nextInt();
-                                
-                                if (nomorTransaksi > 0 && nomorTransaksi <= jumlah_transaksi_pembeli) {
-                                    System.out.println("Transaksi #" + nomorTransaksi + " sedang diproses.");
-                                    // Kirim barang jika stok mencukupi
-                                    if (stok_awal > 0) {
-                                        stok_awal--;
-                                        isBarangDikirim = true;
-                                        tanggalPengiriman = currentDate;
-                                        System.out.println("Barang telah dikirim!");
-                                        System.out.println("Sisa stok: " + stok_awal);
-                                    } else {
-                                        System.out.println("Stok barang tidak mencukupi untuk pengiriman!");
-                                    }
-                                } else {
-                                    System.out.println("Nomor transaksi tidak valid.");
-                                }
+                                //TO DO
                             }
-                        } 
-                        else if (perintah_penjual == 9) {
-                            System.out.println("Jumlah Voucher yang Sudah Dibuat: " + jumlah_voucher_yang_sudah_dibuat_penjual);
-                            if (jumlah_voucher_yang_sudah_dibuat_penjual == 0) {
-                                System.out.println("Belum ada voucher yang dibuat.");
-                            } else {
-                                System.out.println("Daftar Voucher:");
-                                Scanner voucherScanner = new Scanner(semua_voucher_penjual);
-                                while (voucherScanner.hasNextLine()) {
-                                    System.out.println(voucherScanner.nextLine());
-                                }
-                            }
-                        } 
-                        else if (perintah_penjual == 8) {
+
+                        //Fitur Kembali ke Menu Utama (Langsung Break)
+                        } else if (perintah_penjual == 8) {
                             break;
-                        } 
-                        else {
+
+                        //Fitur Cek Laporan Pendapatan
+                        } else if (perintah_penjual == 7) {
+                            laporan_pendapatan_penjualan();;
+                        } else 
+                        //Fitur Jika angka diluar angka itu sendiri
+                        {
                             System.out.println("Pilihan tidak valid, silakan coba lagi.");
                         }
                     }
                     break;
 
                 case 2:
+
+                    //Fitur Menu Pembeli
                     while (true) {
                         System.out.println("\n===== MENU PEMBELI =====");
                         System.out.println("1. Cek Saldo");
@@ -154,19 +129,27 @@ public class Main {
                         System.out.print("Pilih menu: ");
                         perintah_pembeli = scanner.nextInt();
 
+                        //Cek Saldo
                         if (perintah_pembeli == 1) {
                             System.out.println("Saldo saat ini: " + saldo_pembeli);
-                        } 
-                        else if (perintah_pembeli == 2) {
+                            break;
+
+                        //Top Up Saldo
+                        } else if (perintah_pembeli == 2) {
                             System.out.print("Masukkan jumlah saldo yang ingin ditambah: ");
                             int saldo_tambah = scanner.nextInt();
                             saldo_pembeli = hasil_tambah_saldo(saldo_pembeli, saldo_tambah);
                             System.out.println("Total saldo saat ini: " + saldo_pembeli);
-                        } 
-                        else if (perintah_pembeli == 3) {
+                            break;
+
+                        //Cek harga Barang
+                        } else if (perintah_pembeli == 3) {
                             System.out.println("Harga Barang saat ini: " + harga_barang);
-                        } 
-                        else if (perintah_pembeli == 4) {
+                            break;
+
+                        //Beli Barang
+                        } else if (perintah_pembeli == 4) {
+                            
                             // User memasukkan jumlah barang yang ingin dibeli
                             System.out.println("Masukkan jumlah barang yang ingin dibeli: ");
                             int jumlah = scanner.nextInt();
@@ -175,27 +158,53 @@ public class Main {
 
                             // Proses Voucher
                             System.out.print("Masukkan kode voucher ('skip' untuk lanjut, 'generate' untuk buat kode baru): ");
-                            scanner.nextLine(); // Consume the leftover newline character
+                            scanner.nextLine();
                             String request_pembeli = scanner.nextLine();
 
                             if (request_pembeli.equals("generate")) {
-                                String characterCode = generateCharacterCode();
-                                System.out.println("Generated Character Code: " + characterCode);
-                                String numericCode = convertToNumericCode(characterCode);
-                                System.out.println("Generated Numeric Code: " + numericCode);
+                                String characterCode = generateCodeVoucher();
+                                System.out.println(characterCode);
+
+                                int discount_percentage=get_discount(characterCode);
+                                double harga_barang_setelah_diskon;
+                                jumlah_transaksi_pembeli++;
+
+                                if(discount_percentage<=100){
+                                    harga_barang_setelah_diskon=totalHarga-((discount_percentage/100.0)*totalHarga);
+                                    double harga_barang_setelah_pajak_three_percent;
+                                    harga_barang_setelah_pajak_three_percent=1.03*(harga_barang_setelah_diskon);
+                                    System.out.println("Harga Barang Setelah Diskon adalah "+harga_barang_setelah_pajak_three_percent);
+                                    total_pendapatan+=harga_barang_setelah_pajak_three_percent;
+
+                                }else{
+                                // Menerapkan discount di atas 100 persen
+                                    discount_percentage = get_discount_v2(discount_percentage);
+                                    harga_barang_setelah_diskon = totalHarga - ((discount_percentage / 100.0) * totalHarga);
+                                    double harga_barang_setelah_pajak = harga_barang_setelah_diskon * 1.03;
+                                    System.out.println("Harga Barang Setelah Diskon & Pajak: " + harga_barang_setelah_pajak);
+                                    total_pendapatan+=harga_barang_setelah_pajak_three_percent;
+                                }
+                                break;
+                                
 
                                 // Jika voucher yang digenerate ada di voucher yang digenerate penjual maka diskon diterapkan
-                                if (semua_voucher_penjual.contains(numericCode)) {
-                                    int diskon = 100; // Misalnya, diskon 100
-                                    System.out.println("Voucher valid! Diskon diterapkan: " + diskon);
-                                    totalHarga -= diskon;
-                                    if (totalHarga < 0) totalHarga = 0; // Pastikan harga tidak kurang dari 0
-                                } else {
-                                    System.out.println("Voucher tidak valid!");
-                                }
+                                // Method Penerapan Rekursif Diskon
+
+                                /*
+                                 * Setelah Menerapkan Rekursif Diskon, Kita harus cek Apakah dia Diskonnya diatas 100%
+                                 * Jika Diatas 100%, kita terapkan rekursif lagi
+                                 * Ketika sudah selesai. Harga Barang baru menjadi sebagai berikut
+                                 * Harga Baru (Sebelum Pajak)= (Total Harga Barang - Harga Barang setelah Diskon)
+                                 * Harga Baru(Setelah Pajak)= 103/100*Harga Baru (Sebelum Pajak)
+                                 */
+
+
                             } else if (request_pembeli.equals("skip")) {
                                 // Lanjutkan tanpa voucher
                                 System.out.println("Melanjutkan tanpa voucher.");
+                                jumlah_transaksi_pembeli++;
+                                break;
+
                             } else {
                                 System.out.println("Input tidak valid!");
                             }
@@ -205,95 +214,139 @@ public class Main {
                             } else {
                                 saldo_pembeli -= totalHarga;
                                 jumlah_transaksi_pembeli++;
-                                totalPengeluaran += totalHarga;
-                                if (totalHarga > pembelianTerbesar) {
-                                    pembelianTerbesar = totalHarga;
-                                }
-                                System.out.println("Transaksi berhasil! Sisa saldo: " + saldo_pembeli);
+                                System.out.println("Pembelian berhasil! Total harga setelah diskon: " + totalHarga);
+                                System.out.println("Saldo pembeli sekarang: " + saldo_pembeli);
                             }
-                        }
-                        else if (perintah_pembeli == 6) {
-                            // Implementasi status pengiriman barang
-                            if (isBarangDikirim) {
-                                if (tanggalPengiriman.isBefore(currentDate)) {
-                                    System.out.println("Status pengiriman: Sending");
-                                } else {
-                                    System.out.println("Tidak ada barang yang sedang dikirim.");
-                                }
-                            } else {
-                                System.out.println("Tidak ada barang yang sedang dikirim.");
-                            }
-                        }
-                        else if (perintah_pembeli == 7) {
-                            // Menampilkan laporan pengeluaran
-                            if (jumlah_transaksi_pembeli == 0) {
-                                System.out.println("Tidak ada transaksi untuk laporan.");
-                            } else {
-                                double rataRataPengeluaran = totalPengeluaran / jumlah_transaksi_pembeli;
-                                System.out.println("===== LAPORAN PENGELUARAN =====");
-                                System.out.println("Total Pengeluaran: " + totalPengeluaran);
-                                System.out.println("Jumlah Transaksi: " + jumlah_transaksi_pembeli);
-                                System.out.println("Rata-rata Pengeluaran: " + rataRataPengeluaran);
-                                System.out.println("Total Diskon Diterima: " + totalDiskonDiterima);
-                                System.out.println("Pembelian Terbesar: " + pembelianTerbesar);
-                            }
-                        }
-                        else if (perintah_pembeli == 8) {
+                        } else if (perintah_pembeli == 5) {
+                            String voucher_code=generateCodeVoucher();
+                            System.out.println("Kode Voucher yang dihasilkan: "+voucher_code);
                             break;
+
+                        } else if (perintah_pembeli == 6) {
+                            // Lacak Barang
+
+                            break;
+
+                        } else if (perintah_pembeli == 7) {
+                            laporan_pengeluaran_pembeli();
+                            break;
+
+                        } else if (perintah_pembeli == 8) {
+                            //Kembali Ke Fitur Utama
+                            break;
+
+
                         } else {
-                            System.out.println("Pilihan tidak valid, silakan coba lagi.");
+                            //Mencetak Tidak Valid
+                            System.out.println("Pilihan tidak valid.");
+                            break;
                         }
                     }
                     break;
 
                 case 3:
-                    currentDate = currentDate.plusDays(1); // Hari selanjutnya
-                    System.out.println("Hari telah berganti: " + formatDate(currentDate));
+                    // Menambahkan satu hari ke tanggal berjalan
+                    // Ganti Tanggal
+                    maju_satu_hari();
                     break;
 
                 case 4:
-                    System.out.println("Terima kasih telah menggunakan layanan kami!");
-                    System.exit(0);
+                //Fitur Terima Kasih
+                    System.out.println("Terima kasih telah menggunakan Burhanpedia!");
+                    flag = false;
                     break;
 
                 default:
-                    System.out.println("Pilihan tidak valid.");
+                //Validity Handling
+                    System.out.println("Pilihan tidak valid!");
             }
         }
+        scanner.close();
     }
 
-    // Metode untuk menformat tanggal menjadi string
+    // Method untuk menambahkan saldo
+    public static int hasil_tambah_saldo(int saldo_awal, int saldo_tambah) {
+        return saldo_awal + saldo_tambah;
+    }
+
+    // Method untuk format tanggal
     public static String formatDate(LocalDate date) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd MMMM yyyy", Locale.forLanguageTag("id-ID"));
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEEE, d MMMM yyyy", new Locale("id"));
         return date.format(formatter);
     }
 
-    public static String generateCharacterCode() {
-        String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    // Method untuk generate kode karakter acak
+    public static String generateCodeVoucher() {
         Random random = new Random();
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < 10; i++) {
-            sb.append(CHARACTERS.charAt(random.nextInt(CHARACTERS.length())));
+        String voucher="";
+        for(int i=0;i<10;i++){
+            char randomCharacter=(char) ('A'+random.nextInt(26));
+            int convertedCharacter=((randomCharacter-'A'+10)*i)%10;
+            voucher += Integer.toString(convertedCharacter);
         }
-        return sb.toString();
+        return voucher;
     }
 
-    // Method untuk mengubah kode karakter menjadi kode numerik
-    public static String convertToNumericCode(String characterCode) {
-        StringBuilder numericCode = new StringBuilder();
-        for (char character : characterCode.toCharArray()) {
-            numericCode.append(getNumericValue(character));
+    //Method Rekursif Diskon
+    public static int get_discount(String voucher_code) {
+        return calculate_discount(voucher_code, 0);
+    }
+    
+    private static int calculate_discount(String code, int index) {
+        int length = code.length();
+    
+        // Base case: jika sudah sampai di tengah atau lebih
+        if (index >= length / 2) {
+            // Jika panjangnya ganjil, tambahkan digit tengahnya
+            return (length % 2 != 0) ? Character.getNumericValue(code.charAt(length / 2)) : 0;
         }
-        return numericCode.toString();
+    
+        // Ambil digit dari awal dan akhir
+        int leftDigit = Character.getNumericValue(code.charAt(index));
+        int rightDigit = Character.getNumericValue(code.charAt(length - 1 - index));
+    
+        // Rekursi ke pasangan berikutnya
+        return (leftDigit * rightDigit) + calculate_discount(code, index + 1);
     }
 
-    // Method untuk mendapatkan nilai numerik dari karakter
-    public static int getNumericValue(char character) {
-        return character - 'A'+10;
+    // Rekursi diskon di atas 100 persen
+    public static int get_discount_v2(int discount_percentage) {
+        String discountStr = String.valueOf(discount_percentage);
+        return calculate_discount_v2_helper(discountStr, 0);
     }
 
-    // Menambah saldo pembeli
-    public static int hasil_tambah_saldo(int saldo, int saldo_tambah) {
-        return saldo + saldo_tambah;
+    private static int calculate_discount_v2_helper(String discountStr, int index) {
+        if (index >= discountStr.length()) {
+            return 1; // Basis: Mengembalikan 1 agar perkalian tidak menjadi 0
+        }
+
+        int digit = Character.getNumericValue(discountStr.charAt(index));
+        return digit * calculate_discount_v2_helper(discountStr, index + 1);
+    }
+    
+    //Method View Pengeluaran (Pembeli)
+    public static void laporan_pengeluaran_pembeli(){
+    System.out.println("==Laporan Pengeluaran==");
+    System.out.println("Total Pengeluaran: ");
+    System.out.println("Jumlah Transaksi: ");
+    System.out.println("Rata-Rata Pengeluaran: ");
+    System.out.println("Total Diskon Diterima: ");
+    System.out.println("Pembelian Terbesar: ");
+    }
+
+    //Method View Pendapatan (Penjual)
+    public static void laporan_pendapatan_penjualan(){
+        System.out.println("==Laporan Pendapatan Penjualan==");
+        System.out.println("Total Pendapatan: ");
+        System.out.println("Jumlah Transaksi: ");
+        System.out.println("Rata-Rata Pendapatan: ");
+        System.out.println("Total Diskon Diberikan: ");
+        System.out.println("Pendapatan Terbesar: ");
+    }
+
+    
+    public static void maju_satu_hari(){
+        currentDate = currentDate.plusDays(1);
+        System.out.println("Tanggal berganti ke: " + formatDate(currentDate));
     }
 }
